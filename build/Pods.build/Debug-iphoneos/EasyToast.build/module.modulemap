@@ -1,0 +1,11 @@
+framework module EasyToast {
+  umbrella header "EasyToast-umbrella.h"
+
+  export *
+  module * { export * }
+}
+
+module EasyToast.Swift {
+    header "EasyToast-Swift.h"
+    requires objc
+}

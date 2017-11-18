@@ -1,0 +1,10 @@
+framework module EasyToast {
+  umbrella header "EasyToast-umbrella.h"
+
+  export *
+  module * { export * }
+}
+
+module EasyToast.__Swift {
+    exclude header "EasyToast-Swift.h"
+}
