@@ -20,11 +20,16 @@ class TableViewCell: UITableViewCell {
     
 }
 
-class SearchViewController: UIViewController, UITableViewDelegate, UITableViewDataSource, DetailViewControllerDelegate {
-
+class SearchViewController: UIViewController, UITableViewDelegate, UITableViewDataSource, DetailViewControllerDelegate, UIPickerViewDelegate, UIPickerViewDataSource {
+    var sortPickerData: [String] = []
+    var orderPickerData: [String] = []
+    var sortState:String?
+    var orderState:String?
     
+    @IBOutlet weak var refreshButton: UIButton!
     @IBOutlet weak var stockSearchTextField: SearchTextField!
-    var favorites = [(symbol: String, price: Double, change:Double, changePercent:Double)]()
+    var favoritesDefault = [(symbol: String, price: Double, change:Double, changePercent:Double)]()
+    var favoritesSorted = [(symbol: String, price: Double, change:Double, changePercent:Double)]()
     @IBOutlet weak var tableView: UITableView!
 
     @IBAction func getQuoteButton(_ sender: Any) {
@@ -75,13 +80,20 @@ class SearchViewController: UIViewController, UITableViewDelegate, UITableViewDa
 
         self.navigationController?.setNavigationBarHidden(true, animated: animated)
         
+        // sort favorites
+        sortFavoritesTable()
     }
 
     override func viewDidLoad() {
         super.viewDidLoad()
         // Do any additional setup after loading the view.
         // init the favorites
-        
+        self.sortPickerData = ["Default", "Symbol", "Price", "Change", "Change(%)"]
+        self.orderPickerData = ["Ascending", "Descending"]
+        self.sortState = "Default"
+        self.orderState = "Ascending"
+        refreshButton.setImage(UIImage(named:"refresh"),for:.normal)
+
     }
     override func viewWillDisappear(_ animated: Bool) {
         super.viewWillDisappear(animated)
@@ -103,7 +115,7 @@ class SearchViewController: UIViewController, UITableViewDelegate, UITableViewDa
         if let vc = segue.destination as? DetailViewController {
             vc.symbol = sender as? String
             print("segue: " + vc.symbol!)
-            if favorites.contains(where: {$0.0 == vc.symbol}) {
+            if favoritesDefault.contains(where: {$0.0 == vc.symbol}) {
                 vc.isFavorite = true
             } else {
                 vc.isFavorite = false
@@ -112,21 +124,50 @@ class SearchViewController: UIViewController, UITableViewDelegate, UITableViewDa
         }
     }
     
+    func numberOfComponents(in pickerView: UIPickerView) -> Int {
+        return 1
+    }
     
+    func pickerView(_ pickerView: UIPickerView, numberOfRowsInComponent component: Int) -> Int {
+        if pickerView.tag == 1 {
+            return sortPickerData.count
+        } else {
+            return orderPickerData.count
+        }
+    }
+    
+    func pickerView(_ pickerView: UIPickerView, titleForRow row: Int, forComponent component: Int) -> String? {
+        if pickerView.tag == 1 {
+            return sortPickerData[row]
+        } else {
+            return orderPickerData[row]
+        }
+    }
+    
+    func pickerView(_ pickerView: UIPickerView, didSelectRow row: Int, inComponent component: Int) {
+        if pickerView.tag == 1 {
+            // sorting
+            sortState = sortPickerData[pickerView.selectedRow(inComponent: component)]
+        } else {
+            orderState = orderPickerData[pickerView.selectedRow(inComponent: component)]
+        }
+        sortFavoritesTable()
+    }
+
     func numberOfSectionsInTableView(tableView: UITableView) -> Int {
         return 1
     }
     
     
     func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
-        return favorites.count
+        return favoritesDefault.count
     }
     
     func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
         let cell = tableView.dequeueReusableCell(withIdentifier: "FavoriteCell", for: indexPath as IndexPath) as! TableViewCell
         
         // Fetch Fruit
-        let favorite = favorites[indexPath.row]
+        let favorite = favoritesSorted[indexPath.row]
         // Configure Cell
         cell.symbolLabel.text = favorite.symbol
         cell.priceLabel.text = "$" + String(favorite.price)
@@ -137,7 +178,7 @@ class SearchViewController: UIViewController, UITableViewDelegate, UITableViewDa
     
     func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
         let cell = tableView.dequeueReusableCell(withIdentifier: "FavoriteCell", for: indexPath as IndexPath) as! TableViewCell
-        let favorite = favorites[indexPath.row]
+        let favorite = favoritesSorted[indexPath.row]
 
         performSegue(withIdentifier: "showDetailSegue", sender: favorite.symbol)
     }
@@ -149,17 +190,46 @@ class SearchViewController: UIViewController, UITableViewDelegate, UITableViewDa
     func tableView(_ tableView: UITableView, commit editingStyle: UITableViewCellEditingStyle, forRowAt indexPath: IndexPath) {
         if editingStyle == .delete {
             print("Deleted")
-            self.favorites.remove(at: indexPath.row)
+            self.favoritesSorted.remove(at: indexPath.row)
             self.tableView.deleteRows(at: [indexPath], with: .automatic)
         }
     }
     
     func addFavorite(symbol: String, price:Double, change:Double, changePercent:Double) {
-        favorites.append((symbol:symbol, price:price, change:change, changePercent:changePercent))
-        self.tableView.reloadData()
+        favoritesDefault.append((symbol:symbol, price:price, change:change, changePercent:changePercent))
     }
     func removeFavorite(symbol: String, price:Double, change:Double, changePercent:Double) {
-        favorites = favorites.filter{$0.symbol != symbol}
+        favoritesDefault = favoritesDefault.filter{$0.symbol != symbol}
+    }
+    
+    func sortFavoritesTable() {
+        if sortState == "Default" {
+            favoritesSorted = favoritesDefault
+        } else if sortState == "Symbol" {
+            if orderState == "Ascending" {
+                favoritesSorted = favoritesDefault.sorted(by: {$0.symbol <= $1.symbol})
+            } else {
+                favoritesSorted = favoritesDefault.sorted(by: {$0.symbol > $1.symbol})
+            }
+        } else if sortState == "Price" {
+            if orderState == "Ascending" {
+                favoritesSorted = favoritesDefault.sorted(by: {$0.price <= $1.price})
+            } else {
+                favoritesSorted = favoritesDefault.sorted(by: {$0.price > $1.price})
+            }
+        } else if sortState == "Change" {
+            if orderState == "Ascending" {
+                favoritesSorted = favoritesDefault.sorted(by: {$0.change <= $1.change})
+            } else {
+                favoritesSorted = favoritesDefault.sorted(by: {$0.change > $1.change})
+            }
+        } else if sortState == "Change(%)" {
+            if orderState == "Ascending" {
+                favoritesSorted = favoritesDefault.sorted(by: {$0.changePercent <= $1.changePercent})
+            } else {
+                favoritesSorted = favoritesDefault.sorted(by: {$0.changePercent > $1.changePercent})
+            }
+        }
         self.tableView.reloadData()
     }
 }

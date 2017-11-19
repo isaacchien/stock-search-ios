@@ -148,7 +148,7 @@ class DetailViewController: UIViewController, UITableViewDelegate, UITableViewDa
         return pickerData.count
     }
     
-    func pickerView(_ pickerView: UIPickerView!, titleForRow row: Int, forComponent component: Int) -> String! {
+    func pickerView(_ pickerView: UIPickerView, titleForRow row: Int, forComponent component: Int) -> String? {
         return pickerData[row]
     }
 
