@@ -12,37 +12,83 @@ import AlamofireSwiftyJSON
 import SwiftSpinner
 import WebKit
 
+class NewsTableViewCell: UITableViewCell {
+    
+    @IBOutlet weak var titleLabel: UILabel!
+    @IBOutlet weak var authorLabel: UILabel!
+    @IBOutlet weak var dateLabel: UILabel!
+    
+}
+
 protocol DetailViewControllerDelegate: class {
     
     func addFavorite(symbol:String, price:Double, change:Double, changePercent:Double)
     func removeFavorite(symbol: String, price:Double, change:Double, changePercent:Double)
 }
 
-class DetailViewController: UIViewController, UITableViewDelegate, UITableViewDataSource, UIPickerViewDelegate, UIPickerViewDataSource {
+class DetailViewController: UIViewController, UITableViewDelegate, UITableViewDataSource, UIPickerViewDelegate, UIPickerViewDataSource, XMLParserDelegate {
     weak var delegate: DetailViewControllerDelegate?
     
     var symbol:String?
     var price:Double?
     var change:Double?
     var changePercent:Double?
-    
     var isFavorite:Bool = false
 
     var detailLabels: [String] = []
     var detailData: [String: String?] = [:]
     var pickerData: [String] = [String]()
-    let cellIdentifier = "DetailCell"
+    
+    // News Feed
+    var parser = XMLParser()
+    var posts: [[String:String]] = []
+    var elements: [String: String] = [:]
+    var element: String?
+    var newsTitle: String?
+    var newsDate: String?
+    var newsAuthor: String?
 
-    @IBOutlet weak var tableView: UITableView!
+    @IBOutlet weak var detailTableView: UITableView!
     
     @IBOutlet weak var picker: UIPickerView!
     
     @IBOutlet weak var webView: WKWebView!
     @IBOutlet weak var favoriteButton: UIButton!
     
+    @IBOutlet weak var newsTableView: UITableView!
+    @IBOutlet weak var historicalWebView: WKWebView!
+    @IBOutlet weak var currentView: UIScrollView!
+    @IBOutlet weak var segmentedControl: UISegmentedControl!
+    @IBAction func segmentValueChanged(_ sender: UISegmentedControl) {
+        switch segmentedControl.selectedSegmentIndex {
+            case 0:
+                currentView.isHidden = false
+                historicalWebView.isHidden = true
+                newsTableView.isHidden = true
+
+            case 1:
+                currentView.isHidden = true
+                historicalWebView.isHidden = false
+                newsTableView.isHidden = true
+
+            case 2:
+                currentView.isHidden = true
+                historicalWebView.isHidden = true
+                newsTableView.isHidden = false
+
+            default:
+                break;
+        }
+    }
+    
     override func viewDidLoad() {
         super.viewDidLoad()
         // Do any additional setup after loading the view.
+        // only show currentview on load
+        currentView.isHidden = false
+        historicalWebView.isHidden = true
+        newsTableView.isHidden = true
+
         SwiftSpinner.show("Loading Data")
         title = symbol
         
@@ -65,6 +111,12 @@ class DetailViewController: UIViewController, UITableViewDelegate, UITableViewDa
         let myRequest = URLRequest(url: myURL!)
         webView.load(myRequest)
         webView.scrollView.isScrollEnabled = false
+        
+        
+        // News Feed
+        
+        getNewsFeed()
+        
 
         getStockDetail()
     }
@@ -82,8 +134,54 @@ class DetailViewController: UIViewController, UITableViewDelegate, UITableViewDa
             delegate?.addFavorite(symbol: symbol!,  price: self.price!, change: self.change!, changePercent: self.changePercent!)
         }
     }
+    func parser(_ parser: XMLParser, didStartElement elementName: String, namespaceURI: String?, qualifiedName qName: String?, attributes attributeDict: [String : String]){
+        element = elementName
+        if (elementName as String) == "item"{
+            elements = [:]
+            newsTitle = ""
+            newsDate = ""
+            newsAuthor = ""
+        }
+    }
+    func parser(_ parser: XMLParser, foundCharacters string: String)
+    {
+        
+        if newsTitle != nil && newsDate != nil && newsAuthor != nil && !string.contains("\n"){
+            if element == "title" {
+                newsTitle! = string
+            } else if element == "pubDate" {
+                newsDate! = string
+            } else if element == "sa:author_name" {
+                newsAuthor! = string
+            }
+        }
+    }
     
-    
+    func parser(_ parser: XMLParser, didEndElement elementName: String, namespaceURI: String?, qualifiedName qName: String?){
+        element = elementName
+        if ((elementName as String) == "item") {
+            if newsTitle != nil {
+                elements["title"] = newsTitle
+            }
+            if newsDate != nil {
+                elements["date"] = newsDate
+            }
+            if newsAuthor != nil {
+                elements["author"] = newsAuthor
+            }
+            posts.append(elements)
+        }
+    }
+    func getNewsFeed() {
+        var parser = XMLParser()
+        parser = XMLParser(contentsOf:(URL(string:"https://stock-search-185322.appspot.com/news/" + symbol!))!)!
+        parser.delegate = self
+        parser.parse()
+        
+        posts = Array(posts[0..<5])
+        newsTableView.reloadData()
+    }
+
     func getStockDetail() {
         Alamofire.request("https://stock-search-185322.appspot.com/price/"+self.symbol!).responseSwiftyJSON { dataResponse in
             let json = dataResponse.result.value //A JSON object
@@ -111,7 +209,7 @@ class DetailViewController: UIViewController, UITableViewDelegate, UITableViewDa
                 self.changePercent = self.change! / json!["Time Series (Daily)"][prevDate]["4. close"].doubleValue
                 
                 
-                self.tableView.reloadData()
+                self.detailTableView.reloadData()
                 SwiftSpinner.hide()
 
             }
@@ -124,22 +222,47 @@ class DetailViewController: UIViewController, UITableViewDelegate, UITableViewDa
 
     
     func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
-        return detailLabels.count
+        if tableView == detailTableView {
+            return detailLabels.count
+        } else {
+            return posts.count
+        }
     }
     
     func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
-        let cell = tableView.dequeueReusableCell(withIdentifier: cellIdentifier, for: indexPath as IndexPath)
-        
-        // Fetch Fruit
-        let title = detailLabels[indexPath.row]
-        
-        // Configure Cell
-        cell.textLabel?.text = title
-        cell.detailTextLabel?.text = detailData[title]!
-        
-        return cell
+        if tableView == detailTableView {
+            let cell = tableView.dequeueReusableCell(withIdentifier: "DetailCell", for: indexPath as IndexPath)
+            
+            // Fetch Fruit
+            let title = detailLabels[indexPath.row]
+            
+            // Configure Cell
+            cell.textLabel?.text = title
+            cell.detailTextLabel?.text = detailData[title]!
+            
+            return cell
+        } else {
+            let cell = tableView.dequeueReusableCell(withIdentifier: "NewsCell", for: indexPath as IndexPath) as! NewsTableViewCell
+
+            // Fetch Fruit
+            let post = posts[indexPath.row]
+            // Configure Cell
+            cell.titleLabel?.text = post["title"]
+            cell.authorLabel?.text = "Author: " + post["author"]!
+            cell.dateLabel?.text = "Date: " + post["date"]!
+
+            return cell
+
+        }
     }
-    
+    func tableView(_ tableView: UITableView, heightForRowAt indexPath: IndexPath) -> CGFloat
+    {
+        if tableView == newsTableView {
+            return 120
+        } else {
+            return UITableViewAutomaticDimension
+        }
+    }
     func numberOfComponents(in pickerView: UIPickerView) -> Int {
         return 1
     }

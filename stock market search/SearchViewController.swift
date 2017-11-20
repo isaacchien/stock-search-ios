@@ -114,7 +114,6 @@ class SearchViewController: UIViewController, UITableViewDelegate, UITableViewDa
         
         if let vc = segue.destination as? DetailViewController {
             vc.symbol = sender as? String
-            print("segue: " + vc.symbol!)
             if favoritesDefault.contains(where: {$0.0 == vc.symbol}) {
                 vc.isFavorite = true
             } else {
@@ -189,8 +188,8 @@ class SearchViewController: UIViewController, UITableViewDelegate, UITableViewDa
 
     func tableView(_ tableView: UITableView, commit editingStyle: UITableViewCellEditingStyle, forRowAt indexPath: IndexPath) {
         if editingStyle == .delete {
-            print("Deleted")
-            self.favoritesSorted.remove(at: indexPath.row)
+            let deleteSymbol = favoritesSorted[indexPath.row].symbol
+            favoritesDefault = favoritesDefault.filter{$0.symbol != deleteSymbol}
             self.tableView.deleteRows(at: [indexPath], with: .automatic)
         }
     }
