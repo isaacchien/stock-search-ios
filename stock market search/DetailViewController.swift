@@ -47,7 +47,10 @@ class DetailViewController: UIViewController, UITableViewDelegate, UITableViewDa
     var newsTitle: String?
     var newsDate: String?
     var newsAuthor: String?
+    var newsLink: String?
 
+    let backendURL = "https://stock-search-185322.appspot.com/"
+    
     @IBOutlet weak var detailTableView: UITableView!
     
     @IBOutlet weak var picker: UIPickerView!
@@ -107,18 +110,51 @@ class DetailViewController: UIViewController, UITableViewDelegate, UITableViewDa
         pickerData = ["Price", "SMA", "EMA", "STOCH", "RSI", "ADX", "CCI", "BBANDS", "MACD"]
         
         //Webview
-        let myURL = URL(string: "https://www.apple.com")
-        let myRequest = URLRequest(url: myURL!)
-        webView.load(myRequest)
-        webView.scrollView.isScrollEnabled = false
-        
+
         
         // News Feed
         
         getNewsFeed()
-        
 
         getStockDetail()
+        
+        
+        // charts
+        let htmlFile = Bundle.main.path(forResource: "index", ofType: "html")
+        let html = try? String(contentsOfFile: htmlFile!, encoding: String.Encoding.utf8)
+        webView.loadHTMLString(html!, baseURL: nil)
+
+//        loadPriceChart()
+    }
+
+    func loadPriceChart() {
+        Alamofire.request(backendURL + "Price/"+self.symbol!).responseSwiftyJSON { dataResponse in
+            let json = dataResponse.result.value //A JSON object
+            let isSuccess = dataResponse.result.isSuccess
+            if (isSuccess && (json != nil)) {
+                let dates = json!["Time Series (Daily)"].dictionary?.keys.sorted(by: >)[0..<112].map{String($0)}
+                let prices = dates!.map{json!["Time Series (Daily)"][$0]["4. close"].doubleValue}
+                let volumes = dates!.map{json!["Time Series (Daily)"][$0]["5. volume"].doubleValue}
+                
+                let transferData = ["symbol":self.symbol!, "dates":dates!, "prices":prices, "volumnes":volumes] as [String : Any]
+                
+                do {
+                    let jsonData = try JSONSerialization.data(withJSONObject: transferData, options: [])  // serialize the data dictionary
+                    let jsonEncodedData = jsonData.base64EncodedString() // base64 eencode the data dictionary
+                    let javascript = "makePriceChart('\(jsonEncodedData)')"     // set funcName parameter as a single quoted string
+                    self.webView.evaluateJavaScript(javascript, completionHandler: { (result, error) in
+                        if error != nil {
+                            print(result!)
+                        } else {
+                            print("no error")
+                        }
+                    })
+                } catch {
+                    print("caught exception")
+                }
+
+            }
+        }
     }
 
     override func didReceiveMemoryWarning() {
@@ -141,18 +177,21 @@ class DetailViewController: UIViewController, UITableViewDelegate, UITableViewDa
             newsTitle = ""
             newsDate = ""
             newsAuthor = ""
+            newsLink = ""
         }
     }
     func parser(_ parser: XMLParser, foundCharacters string: String)
     {
         
-        if newsTitle != nil && newsDate != nil && newsAuthor != nil && !string.contains("\n"){
+        if newsTitle != nil && newsDate != nil && newsAuthor != nil && newsLink != nil && !string.contains("\n"){
             if element == "title" {
                 newsTitle! = string
             } else if element == "pubDate" {
                 newsDate! = string
             } else if element == "sa:author_name" {
                 newsAuthor! = string
+            } else if element == "link" {
+                newsLink! = string
             }
         }
     }
@@ -169,12 +208,15 @@ class DetailViewController: UIViewController, UITableViewDelegate, UITableViewDa
             if newsAuthor != nil {
                 elements["author"] = newsAuthor
             }
+            if newsLink != nil {
+                elements["link"] = newsLink
+            }
             posts.append(elements)
         }
     }
     func getNewsFeed() {
         var parser = XMLParser()
-        parser = XMLParser(contentsOf:(URL(string:"https://stock-search-185322.appspot.com/news/" + symbol!))!)!
+        parser = XMLParser(contentsOf:(URL(string:backendURL + "news/" + symbol!))!)!
         parser.delegate = self
         parser.parse()
         
@@ -183,35 +225,35 @@ class DetailViewController: UIViewController, UITableViewDelegate, UITableViewDa
     }
 
     func getStockDetail() {
-        Alamofire.request("https://stock-search-185322.appspot.com/price/"+self.symbol!).responseSwiftyJSON { dataResponse in
+        Alamofire.request(backendURL + "Price/"+self.symbol!).responseSwiftyJSON { dataResponse in
             let json = dataResponse.result.value //A JSON object
             let isSuccess = dataResponse.result.isSuccess
             if (isSuccess && (json != nil)) {
                 // get Stock    Symbol,    Last    Price,    Change,    Timestamp,    Open,    Close,    Day’s    Range,    Volume.
+                let dates = json!["Time Series (Daily)"].dictionary?.keys.sorted(by: >)[0..<112].map{String($0)}
+
                 self.detailData["Stock Symbol"] = json!["Meta Data"]["2. Symbol"].string
-                let currentDate = json!["Meta Data"]["3. Last Refreshed"].string
+                let currentDate = dates![0]
                 self.detailData["Timestamp"] = currentDate
                 
-                self.price = json!["Time Series (Daily)"][currentDate!]["4. close"].doubleValue
+                self.price = json!["Time Series (Daily)"][currentDate]["4. close"].doubleValue
                 self.detailData["Last Price"] = String(format: "%.2f", self.price!)
                 
-                self.detailData["Open"] = String(format: "%.2f",json!["Time Series (Daily)"][currentDate!]["1. open"].doubleValue)
-                let high = json!["Time Series (Daily)"][currentDate!]["2. high"].doubleValue
-                let low = json!["Time Series (Daily)"][currentDate!]["3. low"].doubleValue
+                self.detailData["Open"] = String(format: "%.2f",json!["Time Series (Daily)"][currentDate]["1. open"].doubleValue)
+                let high = json!["Time Series (Daily)"][currentDate]["2. high"].doubleValue
+                let low = json!["Time Series (Daily)"][currentDate]["3. low"].doubleValue
                 self.detailData["Day's Range"] = String(format: "%.2f",(high - low))
-                self.detailData["Volume"] = json!["Time Series (Daily)"][currentDate!]["5. volume"].stringValue
+                self.detailData["Volume"] = json!["Time Series (Daily)"][currentDate]["5. volume"].stringValue
                 
                 // Favorite Data
-                var dates = json!["Time Series (Daily)"].dictionary?.keys.sorted(by: >)[0..<112]
                 let prevDate = dates![1]
                 
-                self.change = json!["Time Series (Daily)"][currentDate!]["4. close"].doubleValue - json!["Time Series (Daily)"][prevDate]["4. close"].doubleValue
-                self.changePercent = self.change! / json!["Time Series (Daily)"][prevDate]["4. close"].doubleValue
+                self.change = json!["Time Series (Daily)"][currentDate]["4. close"].doubleValue - json!["Time Series (Daily)"][prevDate]["4. close"].doubleValue
+                self.changePercent = (self.change! / json!["Time Series (Daily)"][prevDate]["4. close"].doubleValue) * 100
                 
                 
                 self.detailTableView.reloadData()
                 SwiftSpinner.hide()
-
             }
         }
     }
@@ -263,6 +305,17 @@ class DetailViewController: UIViewController, UITableViewDelegate, UITableViewDa
             return UITableViewAutomaticDimension
         }
     }
+    
+    func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
+        if tableView == newsTableView {
+            let post = posts[indexPath.row]
+            print(post["link"]!)
+            if let url = URL(string: post["link"]!) {
+                UIApplication.shared.open(url, options: [:])
+            }
+        }
+    }
+    
     func numberOfComponents(in pickerView: UIPickerView) -> Int {
         return 1
     }

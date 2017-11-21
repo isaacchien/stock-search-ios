@@ -21,12 +21,26 @@ class TableViewCell: UITableViewCell {
 }
 
 class SearchViewController: UIViewController, UITableViewDelegate, UITableViewDataSource, DetailViewControllerDelegate, UIPickerViewDelegate, UIPickerViewDataSource {
+    var timer = Timer()
+
     var sortPickerData: [String] = []
     var orderPickerData: [String] = []
     var sortState:String?
     var orderState:String?
     
+    @IBOutlet weak var autoRefreshSwitch: UISwitch!
+    
+    @IBAction func autoRefreshChanged(_ sender: Any) {
+        if (autoRefreshSwitch.isOn) {
+            timer = Timer.scheduledTimer(timeInterval: 5, target: self, selector: (#selector(SearchViewController.refreshFavorites)), userInfo: nil, repeats: true)
+        } else {
+            timer.invalidate()
+        }
+    }
     @IBOutlet weak var refreshButton: UIButton!
+    @IBAction func refreshPressed(_ sender: Any) {
+        refreshFavorites()
+    }
     @IBOutlet weak var stockSearchTextField: SearchTextField!
     var favoritesDefault = [(symbol: String, price: Double, change:Double, changePercent:Double)]()
     var favoritesSorted = [(symbol: String, price: Double, change:Double, changePercent:Double)]()
@@ -93,7 +107,7 @@ class SearchViewController: UIViewController, UITableViewDelegate, UITableViewDa
         self.sortState = "Default"
         self.orderState = "Ascending"
         refreshButton.setImage(UIImage(named:"refresh"),for:.normal)
-
+        
     }
     override func viewWillDisappear(_ animated: Bool) {
         super.viewWillDisappear(animated)
@@ -122,7 +136,44 @@ class SearchViewController: UIViewController, UITableViewDelegate, UITableViewDa
             vc.delegate = self
         }
     }
-    
+    @objc func refreshFavorites(){
+        // request for every favorite in favoritesDefault
+        // update values
+        let dispatchGroup = DispatchGroup()
+        
+        let symbols = favoritesDefault.map{$0.symbol}
+        symbols.map{
+            dispatchGroup.enter()
+            Alamofire.request("https://stock-search-185322.appspot.com/Price/"+$0).responseSwiftyJSON { dataResponse in
+                let json = dataResponse.result.value //A JSON object
+                let isSuccess = dataResponse.result.isSuccess
+                if (isSuccess && (json != nil)) {
+                    let symbol = json!["Meta Data"]["2. Symbol"].string
+                    let dates = json!["Time Series (Daily)"].dictionary?.keys.sorted(by: >)[0..<2].map{String($0)}
+                    let prices = dates!.map{json!["Time Series (Daily)"][$0]["4. close"].doubleValue}
+                    
+                    let change = prices[0] - prices[1]
+                    let changePercent = change / prices[1]
+                    let index = self.favoritesDefault.index(where: {$0.symbol == symbol!})
+                    self.favoritesDefault[index!].price = prices[0]
+                    self.favoritesDefault[index!].change = change
+                    self.favoritesDefault[index!].changePercent = changePercent
+                    
+                    let sortedIndex = self.favoritesSorted.index(where: {$0.symbol == symbol!})
+                    self.favoritesSorted[sortedIndex!].price = prices[0]
+                    self.favoritesSorted[sortedIndex!].change = change
+                    self.favoritesSorted[sortedIndex!].changePercent = changePercent
+                    
+                    dispatchGroup.leave()
+                }
+            }
+            dispatchGroup.notify(queue: DispatchQueue.main, execute: {
+                //all asynchronous tasks added to this DispatchGroup are completed. Proceed as required.
+                self.tableView.reloadData()
+            })
+        }
+        self.tableView.reloadData()
+    }
     func numberOfComponents(in pickerView: UIPickerView) -> Int {
         return 1
     }
@@ -170,13 +221,12 @@ class SearchViewController: UIViewController, UITableViewDelegate, UITableViewDa
         // Configure Cell
         cell.symbolLabel.text = favorite.symbol
         cell.priceLabel.text = "$" + String(favorite.price)
-        cell.changeLabel.text = String(format: "%.2f", favorite.change) + " (" + String(format: "%.2f", favorite.change) + "%)"
+        cell.changeLabel.text = String(format: "%.2f", favorite.change) + " (" + String(format: "%.2f", favorite.changePercent) + "%)"
 
         return cell
     }
     
     func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
-        let cell = tableView.dequeueReusableCell(withIdentifier: "FavoriteCell", for: indexPath as IndexPath) as! TableViewCell
         let favorite = favoritesSorted[indexPath.row]
 
         performSegue(withIdentifier: "showDetailSegue", sender: favorite.symbol)

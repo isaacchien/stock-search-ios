@@ -66,6 +66,9 @@
                             <switch opaque="NO" contentMode="scaleToFill" horizontalHuggingPriority="750" verticalHuggingPriority="750" fixedFrame="YES" contentHorizontalAlignment="center" contentVerticalAlignment="center" translatesAutoresizingMaskIntoConstraints="NO" id="WML-MP-SG4">
                                 <rect key="frame" x="250" y="225" width="49" height="31"/>
                                 <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
+                                <connections>
+                                    <action selector="autoRefreshChanged:" destination="BYZ-38-t0r" eventType="valueChanged" id="QWF-4L-J2d"/>
+                                </connections>
                             </switch>
                             <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" fixedFrame="YES" text="AutoRefresh" textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="gt7-jn-bfy">
                                 <rect key="frame" x="147" y="230" width="95" height="21"/>
@@ -147,6 +150,9 @@
                             <button opaque="NO" contentMode="scaleToFill" fixedFrame="YES" contentHorizontalAlignment="center" contentVerticalAlignment="center" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="jd4-XL-E6A">
                                 <rect key="frame" x="321" y="225" width="30" height="30"/>
                                 <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
+                                <connections>
+                                    <action selector="refreshPressed:" destination="BYZ-38-t0r" eventType="touchUpInside" id="rXZ-7J-gc0"/>
+                                </connections>
                             </button>
                             <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" fixedFrame="YES" text="Order" textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="pv5-JG-2Zq">
                                 <rect key="frame" x="182" y="280" width="45" height="21"/>
@@ -161,6 +167,7 @@
                     </view>
                     <navigationItem key="navigationItem" id="ImT-aJ-N8m"/>
                     <connections>
+                        <outlet property="autoRefreshSwitch" destination="WML-MP-SG4" id="yCP-ZC-iaA"/>
                         <outlet property="refreshButton" destination="jd4-XL-E6A" id="ThV-YA-TPe"/>
                         <outlet property="stockSearchTextField" destination="sZJ-G1-Voi" id="1m5-nG-JtO"/>
                         <outlet property="tableView" destination="xhw-0E-vXe" id="QS7-tq-umW"/>
@@ -326,7 +333,7 @@
                                     <outlet property="delegate" destination="dwd-Ln-sdP" id="gHV-b4-DML"/>
                                 </connections>
                             </tableView>
-                            <wkWebView contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="CHu-Vj-TQR">
+                            <wkWebView contentMode="scaleToFill" fixedFrame="YES" translatesAutoresizingMaskIntoConstraints="NO" id="CHu-Vj-TQR">
                                 <rect key="frame" x="0.0" y="125" width="375" height="542"/>
                                 <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
                                 <color key="backgroundColor" red="0.36078431370000003" green="0.38823529410000002" blue="0.4039215686" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
@@ -350,11 +357,6 @@
                         </subviews>
                         <color key="backgroundColor" white="1" alpha="1" colorSpace="calibratedWhite"/>
                         <viewLayoutGuide key="safeArea" id="0Vs-0b-W8c"/>
-                        <variation key="default">
-                            <mask key="subviews">
-                                <exclude reference="CHu-Vj-TQR"/>
-                            </mask>
-                        </variation>
                     </view>
                     <connections>
                         <outlet property="currentView" destination="xv6-dX-Ia6" id="BUy-fz-xPx"/>

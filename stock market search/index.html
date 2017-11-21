@@ -1,0 +1,73 @@
+<script src="https://code.highcharts.com/highcharts.js"></script>
+<script src="https://code.highcharts.com/modules/series-label.js"></script>
+<script src="https://code.highcharts.com/modules/exporting.js"></script>
+
+<p id="log"></p>
+<div id="container"></div>
+
+<script>
+    function makePriceChart(data){
+        var decodedData = window.atob(data);  // decode the data
+        var transferData = JSON.parse(decodedData);  // convert the decoded data to a dictionary
+
+        Highcharts.chart('container', {
+                         chart: {
+                         type: 'area',
+                         zoomType: 'x'
+                         },
+                         title: {
+                         text: transferData.symbol + "Stock Price and Volume"
+                         },
+                         
+                         subtitle: {
+                         text: '<a target="_blank" id="source-link" href="https://www.alphavantage.co/">Source: Alpha Vantage</a>',
+                         style: {
+                         color: '#4286f4'
+                         },
+                         useHTML: true
+                         
+                         },
+                         xAxis: {
+                         categories: [],
+                         tickInterval: 20,
+                         showLastLabel: true,
+                         reversed: true,
+                         startOnTick: true,
+                         showFirstLabel: true
+                         },
+                         yAxis: [{
+                                 // minPadding: 10000,
+                                 // min: <?php echo $minPrice ?>,
+                                 // max: <?php echo $maxPrice?>,
+                                 title: {
+                                 text: 'Stock Price'
+                                 }
+                                 },
+                                 {
+                                 tite: {
+                                 text: 'Volume'
+                                 },
+                                 opposite: true,
+                                 maxPadding: 4
+                                 }],
+                         
+                         series: [{
+                                  marker: {
+                                  enabled: false,
+                                  },
+                                  name: transferData.symbol,
+                                  data:transferData.prices,
+                                  color: '#5000ff'
+                                  
+                                  },
+                                  {
+                                  yAxis: 1,
+                                  type: "column",
+                                  name: transferData.symbol + " Volume",
+                                  data: transferData.volumes,
+                                  color: '#ff0000'
+                                  }],
+                         
+                         });
+    }
+</script>
