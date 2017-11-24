@@ -220,7 +220,7 @@ class SearchViewController: UIViewController, UITableViewDelegate, UITableViewDa
         let favorite = favoritesSorted[indexPath.row]
         // Configure Cell
         cell.symbolLabel.text = favorite.symbol
-        cell.priceLabel.text = "$" + String(favorite.price)
+        cell.priceLabel.text = "$" + String(format: "%.2f", favorite.price)
         cell.changeLabel.text = String(format: "%.2f", favorite.change) + " (" + String(format: "%.2f", favorite.changePercent) + "%)"
 
         return cell
