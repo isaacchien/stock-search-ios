@@ -222,6 +222,11 @@ class SearchViewController: UIViewController, UITableViewDelegate, UITableViewDa
         cell.symbolLabel.text = favorite.symbol
         cell.priceLabel.text = "$" + String(format: "%.2f", favorite.price)
         cell.changeLabel.text = String(format: "%.2f", favorite.change) + " (" + String(format: "%.2f", favorite.changePercent) + "%)"
+        if favorite.change < 0 {
+            cell.changeLabel.textColor = UIColor.red
+        } else {
+            cell.changeLabel.textColor = UIColor.green
+        }
 
         return cell
     }

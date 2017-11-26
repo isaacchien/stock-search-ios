@@ -11,5 +11,8 @@ target 'stock market search' do
   pod "SearchTextField"
   pod "EasyToast"
   pod "SwiftSpinner"
+  pod 'FBSDKCoreKit'
+  pod 'FBSDKShareKit'
+  pod 'FBSDKLoginKit'
 
 end

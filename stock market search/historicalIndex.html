@@ -2,9 +2,12 @@
 <script src="https://code.highcharts.com/stock/modules/exporting.js"></script>
 <script src="https://code.jquery.com/jquery-3.1.1.min.js"></script>
 <style>
-    html {
-        
+    html  {
+        height: 100%;
+        width: 400px;
+        margin: 0;
     }
+
 </style>
 <html>
     <p id="log"></p>
@@ -16,83 +19,37 @@
     function makeHistoricalChart(data){
         var decodedData = window.atob(data);  // decode the data
         var transferData = JSON.parse(decodedData);  // convert the decoded data to a dictionary
-        
-        
         var result = [], i = -1;
-
         while ( transferData.historicalDates[++i] ) {
-        result.push( [ parseFloat(transferData.historicalDates[i]), parseFloat(transferData.historicalPrices[i]) ] );
+            result.push( [ parseFloat(transferData.historicalDates[i]), parseFloat(transferData.historicalPrices[i]) ] );
         }
         result = result.reverse()
 
-          var buttons = [
-                       {
-                       type: 'week',
-                       count: 1,
-                       text: '1w',
-                       dataGrouping: {
-                       forced: true,
-                       units: [['day', [1]]]
-                       }
-                       },
-                       {
-                       type: 'month',
-                       count: 1,
-                       text: '1m',
-                       dataGrouping: {
-                       forced: true,
-                       units: [['week', [1]]]
-                       }
-                       },
-                       {
-                       type: 'month',
-                       count: 3,
-                       text: '3m',
-                       dataGrouping: {
-                       forced: true,
-                       units: [['week', [1]]]
-                       }
-                       },
-                       {
-                       type: 'month',
-                       count: 6,
-                       text: '6m',
-                       dataGrouping: {
-                       forced: true,
-                       units: [['week', [1]]]
-                       }
-                       },
-                       {
-                       type: 'year',
-                       count: 1,
-                       text: 'YTD',
-                       dataGrouping: {
-                       forced: true,
-                       units: [['month', [1]]]
-                       }
-                       },
-                       {
-                       type: 'year',
-                       count: 1,
-                       text: '1y',
-                       dataGrouping: {
-                       forced: true,
-                       units: [['week', [1]]]
-                       }
-                       },
-                       {
-                       type: 'all',
-                       text: 'All',
-                       dataGrouping: {
-                       forced: true,
-                       units: [['month', [1]]]
-                       }
-                       }];
+var buttons = [{
+          type: 'month',
+          count: 1,
+          text: '1m'
+          }, {
+          type: 'month',
+          count: 3,
+          text: '3m'
+          }, {
+          type: 'month',
+          count: 6,
+          text: '6m'
+          }, {
+          type: 'year',
+          count: 1,
+          text: '1y'
+          }, {
+          type: 'all',
+          text: 'All'
+          }]
+          
         Highcharts.stockChart('container',
                               {
                               chart: {
-                              height: 800,
-                              width: 1000
+                              height: 500,
                               },
                               rangeSelector: {
                               allButtonsEnabled: true,

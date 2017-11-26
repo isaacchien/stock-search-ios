@@ -9,14 +9,15 @@
     function makePriceChart(data){
         var decodedData = window.atob(data);  // decode the data
         var transferData = JSON.parse(decodedData);  // convert the decoded data to a dictionary
-
+        
         Highcharts.chart('container', {
                          chart: {
                          type: 'area',
-                         zoomType: 'x'
+                         zoomType: 'x',
+                         width: 400
                          },
                          title: {
-                         text: transferData.symbol + "Stock Price and Volume"
+                         text: transferData.symbol + " Stock Price and Volume"
                          },
                          
                          subtitle: {
@@ -28,17 +29,14 @@
                          
                          },
                          xAxis: {
-                         categories: [],
-                         tickInterval: 20,
+                         categories: transferData.dates,
+                         tickInterval: 21,
                          showLastLabel: true,
                          reversed: true,
                          startOnTick: true,
                          showFirstLabel: true
                          },
                          yAxis: [{
-                                 // minPadding: 10000,
-                                 // min: <?php echo $minPrice ?>,
-                                 // max: <?php echo $maxPrice?>,
                                  title: {
                                  text: 'Stock Price'
                                  }
@@ -70,4 +68,66 @@
                          
                          });
     }
+function makeIndicatorChart(encoded) {
+    var decodedData = window.atob(encoded);  // decode the data
+    var response = JSON.parse(decodedData);  // convert the decoded data to a dictionary
+    
+    
+    var symbol = response["Meta Data"]["1: Symbol"].toUpperCase()
+    var indicator = response["Meta Data"]["2: Indicator"].match(/\(([^)]+)\)/)[1]
+    var data = response["Technical Analysis: " + indicator]
+    
+    
+    var dates = Object.keys(data).slice(0,112)
+    var keys = Object.keys(data[dates[0]])
+    
+    var series = []
+    for (var i in keys) {
+        var key = keys[i]
+        var name = symbol + " " + key
+        var values = Object.values(Object.values(data).slice(0,112)).map(function(value){
+                                                                         return parseFloat(value[key])
+                                                                         })
+                                                                         series.push({
+                                                                                     "name": name,
+                                                                                     "data": values
+                                                                                     })
+    }
+    var chart = {
+        zoomType: 'x',
+        width: 400
+    }
+    var title = {
+        text: response["Meta Data"]["2: Indicator"]
+    };
+    var subtitle = {
+        text: '<a target="_blank" id="source-link" href="https://www.alphavantage.co/">Source: Alpha Vantage</a>',
+        style: {
+            color: '#4286f4'
+        }
+    };
+    dates = dates.map(function(x){
+                      var date = new Date(x)
+                      return ( (date.getMonth() + 1) + "/" + (date.getDate() + 1))
+                      })
+                      var xAxis = {
+                          categories: dates,
+                          tickInterval: 5,
+                          reversed:true
+                      };
+                      var yAxis = {
+                          title: {
+                              text: indicator
+                          }
+                      };
+                      var json = {};
+                      json.chart = chart;
+                      json.title = title;
+                      json.subtitle = subtitle;
+                      json.xAxis = xAxis;
+                      json.yAxis = yAxis;
+                      json.series = series;
+                      Highcharts.chart('container', json);
+                      
+}
 </script>

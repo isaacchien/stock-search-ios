@@ -11,6 +11,17 @@ import Alamofire
 import AlamofireSwiftyJSON
 import SwiftSpinner
 import WebKit
+import FBSDKCoreKit
+import FBSDKShareKit
+import FBSDKLoginKit
+
+class DetailTableViewCell: UITableViewCell {
+    @IBOutlet weak var titleLabel: UILabel!
+    @IBOutlet weak var detailLabel: UILabel!
+    @IBOutlet weak var arrowImage: UIImageView!
+    
+    
+}
 
 class NewsTableViewCell: UITableViewCell {
     
@@ -48,7 +59,9 @@ class DetailViewController: UIViewController, UITableViewDelegate, UITableViewDa
     var newsDate: String?
     var newsAuthor: String?
     var newsLink: String?
-
+    
+    var currentIndicator: String?
+    
     let backendURL = "https://stock-search-185322.appspot.com/"
     
     @IBAction func facebookPressed(_ sender: Any) {
@@ -86,7 +99,40 @@ class DetailViewController: UIViewController, UITableViewDelegate, UITableViewDa
                 break;
         }
     }
+    @IBOutlet weak var changeButton: UIButton!
     
+    @IBAction func changePressed(_ sender: Any) {
+        changeButton.isEnabled = false
+        let index = picker.selectedRow(inComponent: 0)
+        let indicator = pickerData[index]
+        currentIndicator = indicator
+        if (indicator == "Price"){
+            loadInitCharts()
+        } else {
+            Alamofire.request(backendURL + "indicator/" + indicator + "/" + self.symbol!).responseSwiftyJSON { dataResponse in
+                let json = dataResponse.result.value //A JSON object
+                let isSuccess = dataResponse.result.isSuccess
+                if (isSuccess && (json != nil)) {
+                    
+                    do {
+                        let jsonData = try json!.rawData()
+                        let jsonEncodedData = jsonData.base64EncodedString() // base64 eencode the data dictionary
+                        let javascript = "makeIndicatorChart('\(jsonEncodedData)')"     // set funcName parameter as a single quoted string
+                        self.webView.evaluateJavaScript(javascript, completionHandler: { (result, error) in
+                            if error != nil {
+                                print(error!)
+                            } else {
+                                print("no error")
+                            }
+                        })
+                    } catch {
+                        print("caught exception")
+                    }
+                }
+            }
+
+        }
+    }
     override func viewDidLoad() {
         super.viewDidLoad()
         // Do any additional setup after loading the view.
@@ -94,7 +140,9 @@ class DetailViewController: UIViewController, UITableViewDelegate, UITableViewDa
         currentView.isHidden = false
         historicalWebView.isHidden = true
         newsTableView.isHidden = true
-
+        
+        currentIndicator = "Price"
+        
         SwiftSpinner.show("Loading Data")
         title = symbol
         
@@ -133,19 +181,29 @@ class DetailViewController: UIViewController, UITableViewDelegate, UITableViewDa
         html = try? String(contentsOfFile: htmlFile!, encoding: String.Encoding.utf8)
         historicalWebView.loadHTMLString(html!, baseURL: nil)
 
-        loadPriceChart()
+        loadInitCharts()
+        
+        //facebook
+        
     }
-    func loadPriceChart() {
+    func loadInitCharts() {
         Alamofire.request(backendURL + "Price/"+self.symbol!).responseSwiftyJSON { dataResponse in
             let json = dataResponse.result.value //A JSON object
             let isSuccess = dataResponse.result.isSuccess
             if (isSuccess && (json != nil)) {
                 
-                let dates = json!["Time Series (Daily)"].dictionary?.keys.sorted(by: >)[0..<112].map{String($0)}
-                let prices = dates!.map{json!["Time Series (Daily)"][$0]["4. close"].doubleValue}
-                let volumes = dates!.map{json!["Time Series (Daily)"][$0]["5. volume"].doubleValue}
+                var dateFormatter = DateFormatter()
+                dateFormatter.dateFormat = "YYYY-MM-DD"
+
+                var dates = json!["Time Series (Daily)"].dictionaryValue.keys.sorted(by: >)[0..<112].map{String($0)}
                 
-                var transferData = ["symbol":self.symbol!, "dates":dates!, "prices":prices, "volumes":volumes] as [String : Any]
+                let prices = dates.map{json!["Time Series (Daily)"][$0]["4. close"].doubleValue}
+                let volumes = dates.map{json!["Time Series (Daily)"][$0]["5. volume"].doubleValue}
+                dates = dates.map{
+                    var monthDay = $0.components(separatedBy: ("-"))
+                    return monthDay[1] + "/" + monthDay[2]
+                }
+                var transferData = ["symbol":self.symbol!, "dates":dates, "prices":prices, "volumes":volumes] as [String : Any]
                 
                 do {
                     var jsonData = try JSONSerialization.data(withJSONObject: transferData, options: [])  // serialize the data dictionary
@@ -159,23 +217,20 @@ class DetailViewController: UIViewController, UITableViewDelegate, UITableViewDa
                         }
                     })
                     
-                    let dateFormatter = DateFormatter()
+                    dateFormatter = DateFormatter()
                     dateFormatter.dateFormat="yyyy-MM-dd"
-                    let historicalDatesStrings = json!["Time Series (Daily)"].dictionary?.keys.sorted(by: >)[0..<112].map{String($0)}
-                    let historicalDates = json!["Time Series (Daily)"].dictionary?.keys.sorted(by: >)[0..<112].map{Int(dateFormatter.date(from: $0)!.timeIntervalSince1970)}
+                    let historicalDatesStrings = json!["Time Series (Daily)"].dictionaryValue.keys.sorted(by: >)[0..<1000].map{String($0)}
+                    let historicalDates = json!["Time Series (Daily)"].dictionaryValue.keys.sorted(by: >)[0..<1000].map{Int(dateFormatter.date(from: $0)!.timeIntervalSince1970) * 1000}
 
-                    let historicalPrices = historicalDatesStrings!.map{json!["Time Series (Daily)"][$0]["4. close"].doubleValue}
-                    transferData = ["symbol":self.symbol!, "historicalDates":historicalDates!, "historicalPrices":historicalPrices] as [String : Any]
-                    // historical
+                    let historicalPrices = historicalDatesStrings.map{json!["Time Series (Daily)"][$0]["4. close"].doubleValue}
+                    transferData = ["symbol":self.symbol!, "historicalDates":historicalDates, "historicalPrices":historicalPrices] as [String : Any]
                     jsonData = try JSONSerialization.data(withJSONObject: transferData, options: [])  // serialize the data dictionary
                     jsonEncodedData = jsonData.base64EncodedString() // base64 eencode the data dictionary
-
                     javascript = "makeHistoricalChart('\(jsonEncodedData)')"
                     self.historicalWebView.evaluateJavaScript(javascript, completionHandler: { (result, error) in
                         if error != nil {
                             print(error)
                         } else {
-                            print("no error")
                         }
 
                     })
@@ -284,7 +339,7 @@ class DetailViewController: UIViewController, UITableViewDelegate, UITableViewDa
                 self.change = json!["Time Series (Daily)"][currentDate]["4. close"].doubleValue - json!["Time Series (Daily)"][prevDate]["4. close"].doubleValue
                 self.changePercent = (self.change! / json!["Time Series (Daily)"][prevDate]["4. close"].doubleValue) * 100
                 
-                self.detailData["Change"] = String(format: "%.2f", self.change!) + " - " + String(format: "%.2f", self.changePercent!) + "%"
+                self.detailData["Change"] = String(format: "%.2f", self.change!) + " (" + String(format: "%.2f", self.changePercent!) + ")%"
                 self.detailTableView.reloadData()
             } else {
                 
@@ -307,15 +362,21 @@ class DetailViewController: UIViewController, UITableViewDelegate, UITableViewDa
     
     func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
         if tableView == detailTableView {
-            let cell = tableView.dequeueReusableCell(withIdentifier: "DetailCell", for: indexPath as IndexPath)
+            let cell = tableView.dequeueReusableCell(withIdentifier: "DetailCell", for: indexPath as IndexPath) as! DetailTableViewCell
             
             // Fetch Fruit
             let title = detailLabels[indexPath.row]
             
             // Configure Cell
-            cell.textLabel?.text = title
-            cell.detailTextLabel?.text = detailData[title]!
-            
+            cell.titleLabel?.text = title
+            cell.detailLabel?.text = detailData[title]!
+            if title == "Change" {
+                if self.change != nil && self.change! < 0{
+                    cell.arrowImage.image = UIImage(named:"Red_Arrow_Down")
+                } else {
+                    cell.arrowImage.image = UIImage(named:"Green_Arrow_Up")
+                }
+            }
             return cell
         } else {
             let cell = tableView.dequeueReusableCell(withIdentifier: "NewsCell", for: indexPath as IndexPath) as! NewsTableViewCell
@@ -361,7 +422,14 @@ class DetailViewController: UIViewController, UITableViewDelegate, UITableViewDa
     func pickerView(_ pickerView: UIPickerView, titleForRow row: Int, forComponent component: Int) -> String? {
         return pickerData[row]
     }
-
+    
+    func pickerView(_ pickerView: UIPickerView, didSelectRow row: Int, inComponent component: Int) {
+        if (currentIndicator != pickerData[row]) {
+            changeButton.isEnabled = true
+        } else {
+            changeButton.isEnabled = false
+        }
+    }
     /*
     // MARK: - Navigation
 
