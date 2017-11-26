@@ -303,6 +303,10 @@
                                             <action selector="facebookPressed:" destination="dwd-Ln-sdP" eventType="touchUpInside" id="vNR-rc-tyQ"/>
                                         </connections>
                                     </button>
+                                    <activityIndicatorView opaque="NO" contentMode="scaleToFill" horizontalHuggingPriority="750" verticalHuggingPriority="750" fixedFrame="YES" style="gray" translatesAutoresizingMaskIntoConstraints="NO" id="zvN-xm-nii">
+                                        <rect key="frame" x="178" y="460" width="20" height="20"/>
+                                        <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
+                                    </activityIndicatorView>
                                 </subviews>
                             </scrollView>
                             <tableView clipsSubviews="YES" contentMode="scaleToFill" fixedFrame="YES" alwaysBounceVertical="YES" dataMode="prototypes" style="plain" separatorStyle="default" rowHeight="-1" estimatedRowHeight="-1" sectionHeaderHeight="28" sectionFooterHeight="28" translatesAutoresizingMaskIntoConstraints="NO" id="4wD-8z-akt">
@@ -361,6 +365,10 @@
                                     <wkPreferences key="preferences"/>
                                 </wkWebViewConfiguration>
                             </wkWebView>
+                            <activityIndicatorView opaque="NO" contentMode="scaleToFill" horizontalHuggingPriority="750" verticalHuggingPriority="750" fixedFrame="YES" style="gray" translatesAutoresizingMaskIntoConstraints="NO" id="Yrv-zO-Orp">
+                                <rect key="frame" x="177" y="323" width="20" height="20"/>
+                                <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
+                            </activityIndicatorView>
                             <segmentedControl opaque="NO" contentMode="scaleToFill" fixedFrame="YES" contentHorizontalAlignment="left" contentVerticalAlignment="top" segmentControlStyle="plain" selectedSegmentIndex="0" translatesAutoresizingMaskIntoConstraints="NO" id="yOr-7M-Kmy">
                                 <rect key="frame" x="16" y="72" width="343" height="29"/>
                                 <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
@@ -383,7 +391,9 @@
                         <outlet property="detailTableView" destination="sV9-cd-vnB" id="HbX-Ap-F0F"/>
                         <outlet property="facebookButton" destination="WjT-GV-zCj" id="sdw-zU-yUJ"/>
                         <outlet property="favoriteButton" destination="MFm-nJ-koc" id="odS-Tm-4v9"/>
+                        <outlet property="historicalActivityIndicator" destination="Yrv-zO-Orp" id="k3P-3K-pxR"/>
                         <outlet property="historicalWebView" destination="CHu-Vj-TQR" id="dOg-Ty-SJb"/>
+                        <outlet property="indicatorActivityIndicator" destination="zvN-xm-nii" id="u87-ZU-h4y"/>
                         <outlet property="newsTableView" destination="4wD-8z-akt" id="cFO-39-XJM"/>
                         <outlet property="picker" destination="ksR-jE-er6" id="JHB-Ow-cb6"/>
                         <outlet property="segmentedControl" destination="yOr-7M-Kmy" id="pAn-Cb-i8K"/>

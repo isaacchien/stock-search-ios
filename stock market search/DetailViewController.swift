@@ -60,6 +60,8 @@ class DetailViewController: UIViewController, UITableViewDelegate, UITableViewDa
     var newsAuthor: String?
     var newsLink: String?
     
+    var historicalIsLoaded: Bool?
+    
     var currentIndicator: String?
     
     let backendURL = "https://stock-search-185322.appspot.com/"
@@ -73,7 +75,9 @@ class DetailViewController: UIViewController, UITableViewDelegate, UITableViewDa
     
     @IBOutlet weak var webView: WKWebView!
     @IBOutlet weak var favoriteButton: UIButton!
-    
+    @IBOutlet weak var historicalActivityIndicator: UIActivityIndicatorView!
+    @IBOutlet weak var indicatorActivityIndicator: UIActivityIndicatorView!
+
     @IBOutlet weak var newsTableView: UITableView!
     @IBOutlet weak var historicalWebView: WKWebView!
     @IBOutlet weak var currentView: UIScrollView!
@@ -84,16 +88,21 @@ class DetailViewController: UIViewController, UITableViewDelegate, UITableViewDa
                 currentView.isHidden = false
                 historicalWebView.isHidden = true
                 newsTableView.isHidden = true
+                historicalActivityIndicator.isHidden = true
 
             case 1:
                 currentView.isHidden = true
                 historicalWebView.isHidden = false
                 newsTableView.isHidden = true
+                if (!historicalIsLoaded!) {
+                    historicalActivityIndicator.isHidden = false
+                }
 
             case 2:
                 currentView.isHidden = true
                 historicalWebView.isHidden = true
                 newsTableView.isHidden = false
+                historicalActivityIndicator.isHidden = true
 
             default:
                 break;
@@ -103,6 +112,8 @@ class DetailViewController: UIViewController, UITableViewDelegate, UITableViewDa
     
     @IBAction func changePressed(_ sender: Any) {
         changeButton.isEnabled = false
+        self.webView.isHidden = true
+        self.indicatorActivityIndicator.isHidden = false
         let index = picker.selectedRow(inComponent: 0)
         let indicator = pickerData[index]
         currentIndicator = indicator
@@ -122,6 +133,8 @@ class DetailViewController: UIViewController, UITableViewDelegate, UITableViewDa
                             if error != nil {
                                 print(error!)
                             } else {
+                                self.webView.isHidden = false
+                                self.indicatorActivityIndicator.isHidden = true
                                 print("no error")
                             }
                         })
@@ -140,7 +153,9 @@ class DetailViewController: UIViewController, UITableViewDelegate, UITableViewDa
         currentView.isHidden = false
         historicalWebView.isHidden = true
         newsTableView.isHidden = true
-        
+        historicalActivityIndicator.isHidden = false;
+        indicatorActivityIndicator.startAnimating()
+        historicalActivityIndicator.startAnimating()
         currentIndicator = "Price"
         
         SwiftSpinner.show("Loading Data")
@@ -213,6 +228,8 @@ class DetailViewController: UIViewController, UITableViewDelegate, UITableViewDa
                         if error != nil {
                             print(error)
                         } else {
+                            self.indicatorActivityIndicator.isHidden = true
+                            self.webView.isHidden = false
                             print("no error")
                         }
                     })
@@ -231,6 +248,9 @@ class DetailViewController: UIViewController, UITableViewDelegate, UITableViewDa
                         if error != nil {
                             print(error)
                         } else {
+                            self.historicalIsLoaded = true;
+                            self.historicalActivityIndicator.isHidden = true
+
                         }
 
                     })
