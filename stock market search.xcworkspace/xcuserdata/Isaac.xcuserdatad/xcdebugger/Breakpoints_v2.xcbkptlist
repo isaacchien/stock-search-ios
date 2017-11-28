@@ -10,13 +10,13 @@
             ignoreCount = "0"
             continueAfterRunningActions = "No"
             filePath = "stock market search/DetailViewController.swift"
-            timestampString = "533603232.59176"
+            timestampString = "533604145.030869"
             startingColumnNumber = "9223372036854775807"
             endingColumnNumber = "9223372036854775807"
-            startingLineNumber = "381"
-            endingLineNumber = "381"
-            landmarkName = "getNewsFeed()"
-            landmarkType = "9">
+            startingLineNumber = "386"
+            endingLineNumber = "386"
+            landmarkName = "getStockDetail()"
+            landmarkType = "7">
          </BreakpointContent>
       </BreakpointProxy>
       <BreakpointProxy
@@ -26,13 +26,13 @@
             ignoreCount = "0"
             continueAfterRunningActions = "No"
             filePath = "stock market search/DetailViewController.swift"
-            timestampString = "533603232.592613"
+            timestampString = "533604145.031853"
             startingColumnNumber = "9223372036854775807"
             endingColumnNumber = "9223372036854775807"
-            startingLineNumber = "239"
-            endingLineNumber = "239"
-            landmarkName = "viewDidLoad()"
-            landmarkType = "9">
+            startingLineNumber = "244"
+            endingLineNumber = "244"
+            landmarkName = "loadInitCharts()"
+            landmarkType = "7">
             <Locations>
                <Location
                   shouldBeEnabled = "Yes"

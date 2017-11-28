@@ -164,10 +164,9 @@ class DetailViewController: UIViewController, UITableViewDelegate, UITableViewDa
 
         }
     }
-    
     override func viewDidLayoutSubviews() {
         super.viewDidLayoutSubviews()
-        currentView.contentSize = CGSize(width: self.view.frame.size.width, height: 800)
+        currentView.contentSize = CGSize(width: self.view.frame.size.width, height: 700)
     }
     override func viewDidLoad() {
         super.viewDidLoad()
@@ -184,7 +183,6 @@ class DetailViewController: UIViewController, UITableViewDelegate, UITableViewDa
         historicalActivityIndicator.startAnimating()
         hasErrorHistorical = false
         currentIndicator = "Price"
-        
         
         SwiftSpinner.show("Loading Data")
         title = symbol

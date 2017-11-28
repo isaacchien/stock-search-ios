@@ -202,13 +202,8 @@
                         <rect key="frame" x="0.0" y="0.0" width="375" height="667"/>
                         <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
                         <subviews>
-<<<<<<< HEAD
                             <scrollView clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="scaleToFill" fixedFrame="YES" translatesAutoresizingMaskIntoConstraints="NO" id="xv6-dX-Ia6">
                                 <rect key="frame" x="0.0" y="116" width="375" height="551"/>
-=======
-                            <scrollView clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="scaleToFill" fixedFrame="YES" indicatorStyle="white" translatesAutoresizingMaskIntoConstraints="NO" id="xv6-dX-Ia6">
-                                <rect key="frame" x="-5" y="98" width="375" height="569"/>
->>>>>>> 5482d8ffe60da29618ad09fbbe238ab5ddcd840d
                                 <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
                                 <subviews>
                                     <pickerView contentMode="scaleToFill" fixedFrame="YES" translatesAutoresizingMaskIntoConstraints="NO" id="ksR-jE-er6">
@@ -314,7 +309,7 @@
                                     </tableView>
                                 </subviews>
                             </scrollView>
-                            <tableView clipsSubviews="YES" contentMode="scaleToFill" alwaysBounceVertical="YES" dataMode="prototypes" style="plain" separatorStyle="default" rowHeight="-1" estimatedRowHeight="-1" sectionHeaderHeight="28" sectionFooterHeight="28" translatesAutoresizingMaskIntoConstraints="NO" id="4wD-8z-akt">
+                            <tableView clipsSubviews="YES" contentMode="scaleToFill" fixedFrame="YES" alwaysBounceVertical="YES" dataMode="prototypes" style="plain" separatorStyle="default" rowHeight="-1" estimatedRowHeight="-1" sectionHeaderHeight="28" sectionFooterHeight="28" translatesAutoresizingMaskIntoConstraints="NO" id="4wD-8z-akt">
                                 <rect key="frame" x="0.0" y="116" width="375" height="551"/>
                                 <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
                                 <color key="backgroundColor" white="1" alpha="1" colorSpace="calibratedWhite"/>
@@ -361,7 +356,7 @@
                                     <outlet property="delegate" destination="dwd-Ln-sdP" id="gHV-b4-DML"/>
                                 </connections>
                             </tableView>
-                            <wkWebView contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="CHu-Vj-TQR">
+                            <wkWebView contentMode="scaleToFill" fixedFrame="YES" translatesAutoresizingMaskIntoConstraints="NO" id="CHu-Vj-TQR">
                                 <rect key="frame" x="16" y="156" width="343" height="491"/>
                                 <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
                                 <color key="backgroundColor" red="0.36078431370000003" green="0.38823529410000002" blue="0.4039215686" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
@@ -389,12 +384,6 @@
                         </subviews>
                         <color key="backgroundColor" white="1" alpha="1" colorSpace="calibratedWhite"/>
                         <viewLayoutGuide key="safeArea" id="0Vs-0b-W8c"/>
-                        <variation key="default">
-                            <mask key="subviews">
-                                <exclude reference="4wD-8z-akt"/>
-                                <exclude reference="CHu-Vj-TQR"/>
-                            </mask>
-                        </variation>
                     </view>
                     <connections>
                         <outlet property="changeButton" destination="KYI-tO-CgL" id="YRt-QZ-p6d"/>
