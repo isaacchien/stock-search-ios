@@ -10,11 +10,19 @@ PODS:
     - Bolts/Tasks
   - Bolts/Tasks (1.8.4)
   - EasyToast (2.0.2)
-  - FBSDKCoreKit (4.28.0):
+  - FacebookCore (0.3.0):
+    - Bolts (~> 1.8)
+    - FBSDKCoreKit (~> 4.27)
+  - FacebookShare (0.3.0):
+    - Bolts (~> 1.8)
+    - FacebookCore (~> 0.3)
+    - FBSDKCoreKit (~> 4.27)
+    - FBSDKShareKit (~> 4.27)
+  - FBSDKCoreKit (4.27.1):
     - Bolts (~> 1.7)
   - FBSDKLoginKit (4.28.0):
     - FBSDKCoreKit
-  - FBSDKShareKit (4.28.0):
+  - FBSDKShareKit (4.27.1):
     - FBSDKCoreKit
   - SearchTextField (1.2.0)
   - SwiftSpinner (1.5.0)
@@ -24,6 +32,7 @@ DEPENDENCIES:
   - Alamofire
   - AlamofireSwiftyJSON
   - EasyToast
+  - FacebookShare
   - FBSDKCoreKit
   - FBSDKLoginKit
   - FBSDKShareKit
@@ -35,13 +44,15 @@ SPEC CHECKSUMS:
   AlamofireSwiftyJSON: 78908b766483a28aa5cc90fd191a687467042973
   Bolts: 8a7995239dbe724f9cba2248b766d48b7ebdd322
   EasyToast: 2844de2158fe8d2313c6de81b5a858a909d82532
-  FBSDKCoreKit: ca961e279113f691fd83dc634c0bbad9d4e3f370
+  FacebookCore: 3ffa190a3f1f96cec0e44d3fc221bc322c595ffa
+  FacebookShare: 0469964297ebd75f052be2c5083389a4208e82b7
+  FBSDKCoreKit: 03365dad5d790249196ffad8be4f6d8a2d98f932
   FBSDKLoginKit: b077381c27d800f21661757e8140cf2c80a91e4a
-  FBSDKShareKit: 4f525556e0df4cf0f574cb3f01c675434f29d477
+  FBSDKShareKit: 6a6a0ef9e850c741e4e1d7a7d21335205e997ec1
   SearchTextField: a5bb7e4c33affadb115afdbe8100d84ef10a8024
   SwiftSpinner: 4c058c7a1d6b444dd2e1d70988ead40783097133
   SwiftyJSON: c2842d878f95482ffceec5709abc3d05680c0220
 
-PODFILE CHECKSUM: ea74228f62b9f4665dcfe872614341307f216668
+PODFILE CHECKSUM: 200f588da8b68ec5a1403257a5801a0069808b85
 
 COCOAPODS: 1.2.1

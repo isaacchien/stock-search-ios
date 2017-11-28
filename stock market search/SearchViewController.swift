@@ -178,6 +178,21 @@ class SearchViewController: UIViewController, UITableViewDelegate, UITableViewDa
         return 1
     }
     
+    func pickerView(_ pickerView: UIPickerView, viewForRow row: Int, forComponent component: Int, reusing view: UIView?) -> UIView {
+        var pickerLabel: UILabel? = (view as? UILabel)
+        if pickerLabel == nil {
+            pickerLabel = UILabel()
+            pickerLabel?.font = UIFont(name: "<Your Font Name>", size: 1)
+            pickerLabel?.textAlignment = .center
+        }
+        if pickerView.tag == 1 {
+            pickerLabel?.text = sortPickerData[row]
+        } else {
+            pickerLabel?.text = orderPickerData[row]
+        }
+        return pickerLabel!
+    }
+    
     func pickerView(_ pickerView: UIPickerView, numberOfRowsInComponent component: Int) -> Int {
         if pickerView.tag == 1 {
             return sortPickerData.count

@@ -14,5 +14,5 @@ target 'stock market search' do
   pod 'FBSDKCoreKit'
   pod 'FBSDKShareKit'
   pod 'FBSDKLoginKit'
-
+  pod 'FacebookShare'
 end
