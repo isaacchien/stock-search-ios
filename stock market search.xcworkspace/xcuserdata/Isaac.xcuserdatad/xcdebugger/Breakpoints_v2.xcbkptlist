@@ -15,8 +15,8 @@
             endingColumnNumber = "9223372036854775807"
             startingLineNumber = "381"
             endingLineNumber = "381"
-            landmarkName = "getStockDetail()"
-            landmarkType = "7">
+            landmarkName = "getNewsFeed()"
+            landmarkType = "9">
          </BreakpointContent>
       </BreakpointProxy>
       <BreakpointProxy
@@ -31,8 +31,8 @@
             endingColumnNumber = "9223372036854775807"
             startingLineNumber = "239"
             endingLineNumber = "239"
-            landmarkName = "loadInitCharts()"
-            landmarkType = "7">
+            landmarkName = "viewDidLoad()"
+            landmarkType = "9">
             <Locations>
                <Location
                   shouldBeEnabled = "Yes"

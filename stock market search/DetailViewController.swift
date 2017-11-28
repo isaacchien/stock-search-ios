@@ -185,6 +185,7 @@ class DetailViewController: UIViewController, UITableViewDelegate, UITableViewDa
         hasErrorHistorical = false
         currentIndicator = "Price"
         
+        
         SwiftSpinner.show("Loading Data")
         title = symbol
         
