@@ -164,10 +164,16 @@ class DetailViewController: UIViewController, UITableViewDelegate, UITableViewDa
 
         }
     }
+    
+    override func viewDidLayoutSubviews() {
+        super.viewDidLayoutSubviews()
+        currentView.contentSize = CGSize(width: self.view.frame.size.width, height: 800)
+    }
     override func viewDidLoad() {
         super.viewDidLoad()
         // Do any additional setup after loading the view.
         // only show currentview on load
+        currentView.delegate = self
         currentView.isHidden = false
         historicalWebView.isHidden = true
         newsTableView.isHidden = true
