@@ -14,6 +14,8 @@ import WebKit
 import FBSDKCoreKit
 import FBSDKShareKit
 import FBSDKLoginKit
+import FacebookShare
+import EasyToast
 
 class DetailTableViewCell: UITableViewCell {
     @IBOutlet weak var titleLabel: UILabel!
@@ -32,7 +34,6 @@ class NewsTableViewCell: UITableViewCell {
 }
 
 protocol DetailViewControllerDelegate: class {
-    
     func addFavorite(symbol:String, price:Double, change:Double, changePercent:Double)
     func removeFavorite(symbol: String, price:Double, change:Double, changePercent:Double)
 }
@@ -61,12 +62,26 @@ class DetailViewController: UIViewController, UITableViewDelegate, UITableViewDa
     var newsLink: String?
     
     var historicalIsLoaded: Bool?
-    
+    var hasErrorHistorical: Bool?
+    var hasErrorNews: Bool?
+
     var currentIndicator: String?
-    
+    var chartOptions: Any?
     let backendURL = "https://stock-search-185322.appspot.com/"
     
+    
     @IBAction func facebookPressed(_ sender: Any) {
+        var exportURL = "https://export.highcharts.com/"
+        
+        let content : FBSDKShareLinkContent = FBSDKShareLinkContent()
+        content.contentURL = NSURL(string: "https://export.highcharts.com/charts/chart.4d00902956ff47e3867b49aa637b0b6c.png")! as URL
+
+        let dialog : FBSDKShareDialog = FBSDKShareDialog()
+        dialog.fromViewController = self
+        dialog.shareContent = content
+        dialog.mode = FBSDKShareDialogMode.web
+        dialog.show()
+
     }
     @IBOutlet weak var facebookButton: UIButton!
     @IBOutlet weak var detailTableView: UITableView!
@@ -96,6 +111,9 @@ class DetailViewController: UIViewController, UITableViewDelegate, UITableViewDa
                 newsTableView.isHidden = true
                 if (!historicalIsLoaded!) {
                     historicalActivityIndicator.isHidden = false
+                }
+                if (hasErrorHistorical!) {
+                    print("failed to load historical")
                 }
 
             case 2:
@@ -153,9 +171,12 @@ class DetailViewController: UIViewController, UITableViewDelegate, UITableViewDa
         currentView.isHidden = false
         historicalWebView.isHidden = true
         newsTableView.isHidden = true
-        historicalActivityIndicator.isHidden = false;
+        historicalIsLoaded = false
+        changeButton.isEnabled = false
+        historicalActivityIndicator.isHidden = true
         indicatorActivityIndicator.startAnimating()
         historicalActivityIndicator.startAnimating()
+        hasErrorHistorical = false
         currentIndicator = "Price"
         
         SwiftSpinner.show("Loading Data")
@@ -179,12 +200,13 @@ class DetailViewController: UIViewController, UITableViewDelegate, UITableViewDa
         
         //Webview
 
-        
+        getStockDetail()
+        loadInitCharts()
+
         // News Feed
         
         getNewsFeed()
         
-        getStockDetail()
         
         // charts
         var htmlFile = Bundle.main.path(forResource: "index", ofType: "html")
@@ -196,9 +218,6 @@ class DetailViewController: UIViewController, UITableViewDelegate, UITableViewDa
         html = try? String(contentsOfFile: htmlFile!, encoding: String.Encoding.utf8)
         historicalWebView.loadHTMLString(html!, baseURL: nil)
 
-        loadInitCharts()
-        
-        //facebook
         
     }
     func loadInitCharts() {
@@ -226,18 +245,28 @@ class DetailViewController: UIViewController, UITableViewDelegate, UITableViewDa
                     var javascript = "makePriceChart('\(jsonEncodedData)')"     // set funcName parameter as a single quoted string
                     self.webView.evaluateJavaScript(javascript, completionHandler: { (result, error) in
                         if error != nil {
-                            print(error)
+                            self.view.showToast("Failed to load data. Please try again later.", position: .bottom, popTime: 5, dismissOnTap: true)
+                            self.indicatorActivityIndicator.isHidden = false
+
                         } else {
+                            self.chartOptions = result
                             self.indicatorActivityIndicator.isHidden = true
                             self.webView.isHidden = false
-                            print("no error")
                         }
                     })
                     
                     dateFormatter = DateFormatter()
                     dateFormatter.dateFormat="yyyy-MM-dd"
-                    let historicalDatesStrings = json!["Time Series (Daily)"].dictionaryValue.keys.sorted(by: >)[0..<1000].map{String($0)}
-                    let historicalDates = json!["Time Series (Daily)"].dictionaryValue.keys.sorted(by: >)[0..<1000].map{Int(dateFormatter.date(from: $0)!.timeIntervalSince1970) * 1000}
+                    
+                    var historicalDatesStrings: [String] = []
+                    var historicalDates: [Int] = []
+                    if json!["Time Series (Daily)"].dictionaryValue.keys.count >= 1000 {
+                        historicalDatesStrings = json!["Time Series (Daily)"].dictionaryValue.keys.sorted(by: >)[0..<1000].map{String($0)}
+                        historicalDates = json!["Time Series (Daily)"].dictionaryValue.keys.sorted(by: >)[0..<1000].map{Int(dateFormatter.date(from: $0)!.timeIntervalSince1970) * 1000}
+                    } else {
+                        historicalDatesStrings = json!["Time Series (Daily)"].dictionaryValue.keys.sorted(by: >).map{String($0)}
+                        historicalDates = json!["Time Series (Daily)"].dictionaryValue.keys.sorted(by: >).map{Int(dateFormatter.date(from: $0)!.timeIntervalSince1970) * 1000}
+                    }
 
                     let historicalPrices = historicalDatesStrings.map{json!["Time Series (Daily)"][$0]["4. close"].doubleValue}
                     transferData = ["symbol":self.symbol!, "historicalDates":historicalDates, "historicalPrices":historicalPrices] as [String : Any]
@@ -246,11 +275,12 @@ class DetailViewController: UIViewController, UITableViewDelegate, UITableViewDa
                     javascript = "makeHistoricalChart('\(jsonEncodedData)')"
                     self.historicalWebView.evaluateJavaScript(javascript, completionHandler: { (result, error) in
                         if error != nil {
-                            print(error)
+                            self.hasErrorHistorical = true
+
                         } else {
                             self.historicalIsLoaded = true;
                             self.historicalActivityIndicator.isHidden = true
-
+                            self.hasErrorHistorical = false
                         }
 
                     })
@@ -326,15 +356,18 @@ class DetailViewController: UIViewController, UITableViewDelegate, UITableViewDa
         parser.delegate = self
         parser.parse()
         
-        posts = Array(posts[0..<5])
-        newsTableView.reloadData()
+        if posts.count >= 5 {
+            posts = Array(posts[0..<5])
+            newsTableView.reloadData()
+        } else {
+            print("failed to load historical chart.")
+        }
     }
 
     func getStockDetail() {
         Alamofire.request(backendURL + "Price/"+self.symbol!).responseSwiftyJSON { dataResponse in
             let json = dataResponse.result.value //A JSON object
             let isSuccess = dataResponse.result.isSuccess
-            SwiftSpinner.hide()
 
             if (isSuccess && (json != nil) && json!.dictionaryValue.count > 0) {
                 // get Stock    Symbol,    Last    Price,    Change,    Timestamp,    Open,    Close,    Day’s    Range,    Volume.
@@ -360,9 +393,13 @@ class DetailViewController: UIViewController, UITableViewDelegate, UITableViewDa
                 self.changePercent = (self.change! / json!["Time Series (Daily)"][prevDate]["4. close"].doubleValue) * 100
                 
                 self.detailData["Change"] = String(format: "%.2f", self.change!) + " (" + String(format: "%.2f", self.changePercent!) + ")%"
-                self.detailTableView.reloadData()
-            } else {
                 
+                self.detailTableView.reloadData()
+                SwiftSpinner.hide()
+            } else {
+                SwiftSpinner.hide()
+                self.indicatorActivityIndicator.isHidden = true
+                self.view.showToast("Failed to load data. Please try again later.", position: .bottom, popTime: 5, dismissOnTap: true)
             }
         }
     }
@@ -391,9 +428,9 @@ class DetailViewController: UIViewController, UITableViewDelegate, UITableViewDa
             cell.titleLabel?.text = title
             cell.detailLabel?.text = detailData[title]!
             if title == "Change" {
-                if self.change != nil && self.change! < 0{
+                if self.change != nil && self.change! < 0 {
                     cell.arrowImage.image = UIImage(named:"Red_Arrow_Down")
-                } else {
+                } else if self.change != nil && self.change! > 0 {
                     cell.arrowImage.image = UIImage(named:"Green_Arrow_Up")
                 }
             }

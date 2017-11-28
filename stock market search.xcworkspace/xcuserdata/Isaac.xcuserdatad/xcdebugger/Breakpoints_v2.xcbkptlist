@@ -6,17 +6,65 @@
       <BreakpointProxy
          BreakpointExtensionID = "Xcode.Breakpoint.FileBreakpoint">
          <BreakpointContent
-            shouldBeEnabled = "No"
+            shouldBeEnabled = "Yes"
             ignoreCount = "0"
             continueAfterRunningActions = "No"
             filePath = "stock market search/DetailViewController.swift"
-            timestampString = "533418580.609245"
+            timestampString = "533590244.064833"
             startingColumnNumber = "9223372036854775807"
             endingColumnNumber = "9223372036854775807"
-            startingLineNumber = "118"
-            endingLineNumber = "118"
-            landmarkName = "changePressed(_:)"
+            startingLineNumber = "375"
+            endingLineNumber = "375"
+            landmarkName = "getStockDetail()"
             landmarkType = "7">
+         </BreakpointContent>
+      </BreakpointProxy>
+      <BreakpointProxy
+         BreakpointExtensionID = "Xcode.Breakpoint.FileBreakpoint">
+         <BreakpointContent
+            shouldBeEnabled = "Yes"
+            ignoreCount = "0"
+            continueAfterRunningActions = "No"
+            filePath = "stock market search/DetailViewController.swift"
+            timestampString = "533590244.066196"
+            startingColumnNumber = "9223372036854775807"
+            endingColumnNumber = "9223372036854775807"
+            startingLineNumber = "233"
+            endingLineNumber = "233"
+            landmarkName = "loadInitCharts()"
+            landmarkType = "7">
+            <Locations>
+               <Location
+                  shouldBeEnabled = "Yes"
+                  ignoreCount = "0"
+                  continueAfterRunningActions = "No"
+                  symbolName = "closure #1 (Alamofire.DataResponse&lt;SwiftyJSON.JSON&gt;) -&gt; () in stock_market_search.DetailViewController.loadInitCharts() -&gt; ()"
+                  moduleName = "stock market search"
+                  usesParentBreakpointCondition = "Yes"
+                  urlString = "file:///Users/Isaac/Desktop/Swift%20Projects/stock%20market%20search/stock%20market%20search/DetailViewController.swift"
+                  timestampString = "533590244.172953"
+                  startingColumnNumber = "9223372036854775807"
+                  endingColumnNumber = "9223372036854775807"
+                  startingLineNumber = "234"
+                  endingLineNumber = "234"
+                  offsetFromSymbolStart = "5045">
+               </Location>
+               <Location
+                  shouldBeEnabled = "Yes"
+                  ignoreCount = "0"
+                  continueAfterRunningActions = "No"
+                  symbolName = "closure #2 (Swift.String) -&gt; Swift.Double in closure #1 (Alamofire.DataResponse&lt;SwiftyJSON.JSON&gt;) -&gt; () in stock_market_search.DetailViewController.loadInitCharts() -&gt; ()"
+                  moduleName = "stock market search"
+                  usesParentBreakpointCondition = "Yes"
+                  urlString = "file:///Users/Isaac/Desktop/Swift%20Projects/stock%20market%20search/stock%20market%20search/DetailViewController.swift"
+                  timestampString = "533590244.184558"
+                  startingColumnNumber = "9223372036854775807"
+                  endingColumnNumber = "9223372036854775807"
+                  startingLineNumber = "234"
+                  endingLineNumber = "234"
+                  offsetFromSymbolStart = "106">
+               </Location>
+            </Locations>
          </BreakpointContent>
       </BreakpointProxy>
    </Breakpoints>
