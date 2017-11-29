@@ -9,6 +9,7 @@
     function makePriceChart(data){
         var decodedData = window.atob(data);  // decode the data
         var transferData = JSON.parse(decodedData);  // convert the decoded data to a dictionary
+        
         var options = {
             chart: {
                 type: 'area',

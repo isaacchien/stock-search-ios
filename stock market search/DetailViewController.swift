@@ -38,7 +38,20 @@ protocol DetailViewControllerDelegate: class {
     func removeFavorite(symbol: String, price:Double, change:Double, changePercent:Double)
 }
 
-class DetailViewController: UIViewController, UITableViewDelegate, UITableViewDataSource, UIPickerViewDelegate, UIPickerViewDataSource, XMLParserDelegate {
+class DetailViewController: UIViewController, UITableViewDelegate, UITableViewDataSource, UIPickerViewDelegate, UIPickerViewDataSource, XMLParserDelegate, FBSDKSharingDelegate {
+    func sharer(_ sharer: FBSDKSharing!, didCompleteWithResults results: [AnyHashable : Any]!) {
+        self.view.showToast("Shared successfully!", position: .bottom, popTime: 5, dismissOnTap: true)
+    }
+    
+    func sharer(_ sharer: FBSDKSharing!, didFailWithError error: Error!) {
+        self.view.showToast("Failed to share.", position: .bottom, popTime: 5, dismissOnTap: true)
+    }
+    
+    func sharerDidCancel(_ sharer: FBSDKSharing!) {
+        self.view.showToast("Shared cancelled!", position: .bottom, popTime: 5, dismissOnTap: true)
+
+    }
+    
     weak var delegate: DetailViewControllerDelegate?
     
     var symbol:String?
@@ -79,8 +92,13 @@ class DetailViewController: UIViewController, UITableViewDelegate, UITableViewDa
         let dialog : FBSDKShareDialog = FBSDKShareDialog()
         dialog.fromViewController = self
         dialog.shareContent = content
+        dialog.delegate = self
         dialog.mode = FBSDKShareDialogMode.web
         dialog.show()
+        let shareDialog: FBSDKShareDialog = FBSDKShareDialog()
+        shareDialog.shareContent = content
+//        FBSDKShareDialog.show(from: self, with: content, delegate: self)
+
 
     }
     @IBOutlet weak var facebookButton: UIButton!
