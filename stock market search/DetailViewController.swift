@@ -93,11 +93,14 @@ class DetailViewController: UIViewController, UITableViewDelegate, UITableViewDa
     @IBOutlet weak var historicalActivityIndicator: UIActivityIndicatorView!
     @IBOutlet weak var indicatorActivityIndicator: UIActivityIndicatorView!
 
+    @IBOutlet weak var errorLabel: UILabel!
     @IBOutlet weak var newsTableView: UITableView!
     @IBOutlet weak var historicalWebView: WKWebView!
     @IBOutlet weak var currentView: UIScrollView!
     @IBOutlet weak var segmentedControl: UISegmentedControl!
     @IBAction func segmentValueChanged(_ sender: UISegmentedControl) {
+        errorLabel.isHidden = true;
+
         switch segmentedControl.selectedSegmentIndex {
             case 0:
                 currentView.isHidden = false
@@ -114,14 +117,24 @@ class DetailViewController: UIViewController, UITableViewDelegate, UITableViewDa
                 }
                 if (hasErrorHistorical!) {
                     print("failed to load historical")
+                    historicalActivityIndicator.isHidden = true
+                    errorLabel.text = "Failed to load historical data"
+                    errorLabel.isHidden = false
+                    
                 }
 
             case 2:
                 currentView.isHidden = true
                 historicalWebView.isHidden = true
-                newsTableView.isHidden = false
                 historicalActivityIndicator.isHidden = true
+                if (hasErrorNews!){
+                    newsTableView.isHidden = true
+                    errorLabel.text = "Failed to load news data"
+                    errorLabel.isHidden = false
 
+                } else {
+                    newsTableView.isHidden = false
+                }
             default:
                 break;
         }
@@ -166,12 +179,13 @@ class DetailViewController: UIViewController, UITableViewDelegate, UITableViewDa
     }
     override func viewDidLayoutSubviews() {
         super.viewDidLayoutSubviews()
-        currentView.contentSize = CGSize(width: self.view.frame.size.width, height: 700)
+        currentView.contentSize = CGSize(width: self.view.frame.size.width, height: 800)
     }
     override func viewDidLoad() {
         super.viewDidLoad()
         // Do any additional setup after loading the view.
         // only show currentview on load
+        errorLabel.isHidden = true;
         currentView.delegate = self
         currentView.isHidden = false
         historicalWebView.isHidden = true
@@ -182,6 +196,7 @@ class DetailViewController: UIViewController, UITableViewDelegate, UITableViewDa
         indicatorActivityIndicator.startAnimating()
         historicalActivityIndicator.startAnimating()
         hasErrorHistorical = false
+        hasErrorNews = false
         currentIndicator = "Price"
         
         SwiftSpinner.show("Loading Data")
@@ -205,7 +220,7 @@ class DetailViewController: UIViewController, UITableViewDelegate, UITableViewDa
         
         //Webview
 
-        getStockDetail()
+//        getStockDetail()
         loadInitCharts()
 
         // News Feed
@@ -229,7 +244,34 @@ class DetailViewController: UIViewController, UITableViewDelegate, UITableViewDa
         Alamofire.request(backendURL + "Price/"+self.symbol!).responseSwiftyJSON { dataResponse in
             let json = dataResponse.result.value //A JSON object
             let isSuccess = dataResponse.result.isSuccess
-            if (isSuccess && (json != nil)) {
+            if (isSuccess && (json != nil)) { //temp fix force error
+                let detailDates = json!["Time Series (Daily)"].dictionary?.keys.sorted(by: >)[0..<112].map{String($0)}
+                
+                self.detailData["Stock Symbol"] = json!["Meta Data"]["2. Symbol"].string
+                let currentDate = detailDates![0]
+                self.detailData["Timestamp"] = currentDate
+                
+                self.price = json!["Time Series (Daily)"][currentDate]["4. close"].doubleValue
+                self.detailData["Last Price"] = String(format: "%.2f", self.price!)
+                
+                self.detailData["Open"] = String(format: "%.2f",json!["Time Series (Daily)"][currentDate]["1. open"].doubleValue)
+                let high = json!["Time Series (Daily)"][currentDate]["2. high"].doubleValue
+                let low = json!["Time Series (Daily)"][currentDate]["3. low"].doubleValue
+                self.detailData["Day's Range"] = String(format: "%.2f",(high - low))
+                self.detailData["Volume"] = json!["Time Series (Daily)"][currentDate]["5. volume"].stringValue
+                
+                // Favorite Data
+                let prevDate = detailDates![1]
+                
+                self.change = json!["Time Series (Daily)"][currentDate]["4. close"].doubleValue - json!["Time Series (Daily)"][prevDate]["4. close"].doubleValue
+                self.changePercent = (self.change! / json!["Time Series (Daily)"][prevDate]["4. close"].doubleValue) * 100
+                
+                self.detailData["Change"] = String(format: "%.2f", self.change!) + " (" + String(format: "%.2f", self.changePercent!) + ")%"
+                
+                self.detailTableView.reloadData()
+                SwiftSpinner.hide()
+
+                
                 
                 var dateFormatter = DateFormatter()
                 dateFormatter.dateFormat = "YYYY-MM-DD"
@@ -293,6 +335,15 @@ class DetailViewController: UIViewController, UITableViewDelegate, UITableViewDa
                 } catch {
                     print("caught exception")
                 }
+
+            } else {
+                // error
+                SwiftSpinner.hide()
+                self.indicatorActivityIndicator.isHidden = true
+                self.historicalActivityIndicator.isHidden = true
+                self.hasErrorHistorical = true
+                self.view.showToast("Failed to load data. Please try again later.", position: .bottom, popTime: 5, dismissOnTap: true)
+                self.view.showToast("Failed to load data and display the chart!", position: .bottom, popTime: 5, dismissOnTap: true)
 
             }
         }
@@ -365,7 +416,8 @@ class DetailViewController: UIViewController, UITableViewDelegate, UITableViewDa
             posts = Array(posts[0..<5])
             newsTableView.reloadData()
         } else {
-            print("failed to load historical chart.")
+            print("failed to load news")
+            hasErrorNews = true
         }
     }
 
@@ -373,7 +425,6 @@ class DetailViewController: UIViewController, UITableViewDelegate, UITableViewDa
         Alamofire.request(backendURL + "Price/"+self.symbol!).responseSwiftyJSON { dataResponse in
             let json = dataResponse.result.value //A JSON object
             let isSuccess = dataResponse.result.isSuccess
-
             if (isSuccess && (json != nil) && json!.dictionaryValue.count > 0) {
                 // get Stock    Symbol,    Last    Price,    Change,    Timestamp,    Open,    Close,    Day’s    Range,    Volume.
                 let dates = json!["Time Series (Daily)"].dictionary?.keys.sorted(by: >)[0..<112].map{String($0)}
