@@ -30,6 +30,7 @@ class SearchViewController: UIViewController, UITableViewDelegate, UITableViewDa
     
     @IBOutlet weak var autoRefreshSwitch: UISwitch!
     
+    @IBOutlet weak var orderPicker: UIPickerView!
     @IBAction func autoRefreshChanged(_ sender: Any) {
         if (autoRefreshSwitch.isOn) {
             timer = Timer.scheduledTimer(timeInterval: 5, target: self, selector: (#selector(SearchViewController.refreshFavorites)), userInfo: nil, repeats: true)
@@ -106,6 +107,7 @@ class SearchViewController: UIViewController, UITableViewDelegate, UITableViewDa
         self.orderPickerData = ["Ascending", "Descending"]
         self.sortState = "Default"
         self.orderState = "Ascending"
+        self.orderPicker.isUserInteractionEnabled = false
         refreshButton.setImage(UIImage(named:"refresh"),for:.normal)
         
     }
@@ -217,6 +219,11 @@ class SearchViewController: UIViewController, UITableViewDelegate, UITableViewDa
             orderState = orderPickerData[pickerView.selectedRow(inComponent: component)]
         }
         sortFavoritesTable()
+        if sortState! == "Default" {
+            orderPicker.isUserInteractionEnabled = false
+        } else {
+            orderPicker.isUserInteractionEnabled = true
+        }
     }
 
     func numberOfSectionsInTableView(tableView: UITableView) -> Int {

@@ -168,6 +168,7 @@
                     <navigationItem key="navigationItem" id="ImT-aJ-N8m"/>
                     <connections>
                         <outlet property="autoRefreshSwitch" destination="WML-MP-SG4" id="yCP-ZC-iaA"/>
+                        <outlet property="orderPicker" destination="BBO-oX-AXM" id="jD1-hk-Iwv"/>
                         <outlet property="refreshButton" destination="jd4-XL-E6A" id="ThV-YA-TPe"/>
                         <outlet property="stockSearchTextField" destination="sZJ-G1-Voi" id="1m5-nG-JtO"/>
                         <outlet property="tableView" destination="xhw-0E-vXe" id="QS7-tq-umW"/>

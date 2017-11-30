@@ -279,7 +279,7 @@ class DetailViewController: UIViewController, UITableViewDelegate, UITableViewDa
                 self.detailData["Open"] = String(format: "%.2f",json!["Time Series (Daily)"][currentDate]["1. open"].doubleValue)
                 let high = json!["Time Series (Daily)"][currentDate]["2. high"].doubleValue
                 let low = json!["Time Series (Daily)"][currentDate]["3. low"].doubleValue
-                self.detailData["Day's Range"] = String(format: "%.2f",low) + " - " + String(format: "%.2f",low)
+                self.detailData["Day's Range"] = String(format: "%.2f",low) + " - " + String(format: "%.2f",high)
                 self.detailData["Close"] = self.detailData["Last Price"]
                 let numberFormatter = NumberFormatter()
                 numberFormatter.numberStyle = NumberFormatter.Style.decimal
