@@ -190,6 +190,10 @@ class DetailViewController: UIViewController, UITableViewDelegate, UITableViewDa
                     } catch {
                         print("caught exception")
                     }
+                } else {
+                    self.indicatorActivityIndicator.isHidden = true
+                    self.view.showToast("Failed to load data and display the chart!", position: .bottom, popTime: 5, dismissOnTap: true)
+
                 }
             }
 
@@ -267,7 +271,7 @@ class DetailViewController: UIViewController, UITableViewDelegate, UITableViewDa
                 
                 self.detailData["Stock Symbol"] = json!["Meta Data"]["2. Symbol"].string
                 let currentDate = detailDates![0]
-                self.detailData["Timestamp"] = currentDate
+                self.detailData["Timestamp"] = currentDate + "16:00:00 EDT"
                 
                 self.price = json!["Time Series (Daily)"][currentDate]["4. close"].doubleValue
                 self.detailData["Last Price"] = String(format: "%.2f", self.price!)
