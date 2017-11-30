@@ -271,7 +271,7 @@ class DetailViewController: UIViewController, UITableViewDelegate, UITableViewDa
                 
                 self.detailData["Stock Symbol"] = json!["Meta Data"]["2. Symbol"].string
                 let currentDate = detailDates![0]
-                self.detailData["Timestamp"] = currentDate + "16:00:00 EDT"
+                self.detailData["Timestamp"] = currentDate + " 16:00:00 EDT"
                 
                 self.price = json!["Time Series (Daily)"][currentDate]["4. close"].doubleValue
                 self.detailData["Last Price"] = String(format: "%.2f", self.price!)
@@ -279,8 +279,13 @@ class DetailViewController: UIViewController, UITableViewDelegate, UITableViewDa
                 self.detailData["Open"] = String(format: "%.2f",json!["Time Series (Daily)"][currentDate]["1. open"].doubleValue)
                 let high = json!["Time Series (Daily)"][currentDate]["2. high"].doubleValue
                 let low = json!["Time Series (Daily)"][currentDate]["3. low"].doubleValue
-                self.detailData["Day's Range"] = String(format: "%.2f",(high - low))
-                self.detailData["Volume"] = json!["Time Series (Daily)"][currentDate]["5. volume"].stringValue
+                self.detailData["Day's Range"] = String(format: "%.2f",low) + " - " + String(format: "%.2f",low)
+                self.detailData["Close"] = self.detailData["Last Price"]
+                let numberFormatter = NumberFormatter()
+                numberFormatter.numberStyle = NumberFormatter.Style.decimal
+                let formattedNumber = numberFormatter.string(from: NSNumber(value:json!["Time Series (Daily)"][currentDate]["5. volume"].int64Value))
+
+                self.detailData["Volume"] = formattedNumber
                 
                 // Favorite Data
                 let prevDate = detailDates![1]
@@ -291,6 +296,7 @@ class DetailViewController: UIViewController, UITableViewDelegate, UITableViewDa
                 self.detailData["Change"] = String(format: "%.2f", self.change!) + " (" + String(format: "%.2f", self.changePercent!) + ")%"
                 
                 self.detailTableView.reloadData()
+                
                 SwiftSpinner.hide()
 
                 
@@ -304,7 +310,7 @@ class DetailViewController: UIViewController, UITableViewDelegate, UITableViewDa
                 let volumes = dates.map{json!["Time Series (Daily)"][$0]["5. volume"].doubleValue}
                 dates = dates.map{
                     var monthDay = $0.components(separatedBy: ("-"))
-                    return monthDay[1] + "/" + monthDay[2]
+                    return "\(Int(monthDay[1])!)" + "/" + "\(Int(monthDay[2])!)"
                 }
                 var transferData = ["symbol":self.symbol!, "dates":dates, "prices":prices, "volumes":volumes] as [String : Any]
                 

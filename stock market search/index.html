@@ -3,13 +3,15 @@
 <script src="https://code.highcharts.com/modules/exporting.js"></script>
 <meta name="viewport" content="width=device-width, initial-scale=0.8">
 
+<div id="log"></div>
+
 <div id="container"></div>
 
 <script>
     function makePriceChart(data){
         var decodedData = window.atob(data);  // decode the data
         var transferData = JSON.parse(decodedData);  // convert the decoded data to a dictionary
-        
+
         var options = {
             chart: {
                 type: 'area',
@@ -30,7 +32,7 @@
             },
             xAxis: {
                 categories: transferData.dates,
-                tickInterval: 21,
+                tickInterval: 5,
                 showLastLabel: true,
                 reversed: true,
                 startOnTick: true,
@@ -80,20 +82,27 @@ function makeIndicatorChart(encoded) {
     var decodedData = window.atob(encoded);  // decode the data
     var response = JSON.parse(decodedData);  // convert the decoded data to a dictionary
     
-    
+
     var symbol = response["Meta Data"]["1: Symbol"].toUpperCase()
     var indicator = response["Meta Data"]["2: Indicator"].match(/\(([^)]+)\)/)[1]
     var data = response["Technical Analysis: " + indicator]
     
     
-    var dates = Object.keys(data).slice(0,112)
+    var dates = Object.keys(data).sort().reverse().slice(0,112)
+
     var keys = Object.keys(data[dates[0]])
-    
+
+    var sortedValues = []
+    for (i = 0; i < dates.length; i++) {
+        
+        sortedValues.push(data[dates[i]]);
+    }
+
     var series = []
     for (var i in keys) {
         var key = keys[i]
         var name = symbol + " " + key
-        var values = Object.values(Object.values(data).slice(0,112)).map(function(value){
+        var values = Object.values(sortedValues).map(function(value){
                                                                          return parseFloat(value[key])
                                                                          })
                                                                          series.push({
